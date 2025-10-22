@@ -1,12 +1,25 @@
-import { useState } from 'react'
+import React, { Suspense } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
-function App() {
+const HomePage = React.lazy(() => import('./pages/HomePage'));
+const IDEPage = React.lazy(() => import('./pages/IDEPage'));
 
+const LoadingFallback = () => (
+  <div className="flex items-center justify-center h-screen w-screen bg-gray-900 text-white">
+    Loading...
+  </div>
+);
+
+export default function App() {
   return (
-    <>
-      <div className='text-red-300'>Cipher Studio</div>
-    </>
-  )
+    <BrowserRouter>
+      <Suspense fallback={<LoadingFallback />}>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/project/:projectId" element={<IDEPage />} />
+        </Routes>
+      </Suspense>
+    </BrowserRouter>
+  );
 }
 
-export default App
