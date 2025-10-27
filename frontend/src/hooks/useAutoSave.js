@@ -17,7 +17,7 @@ import { updateFile } from '../api'; // Import your API function
  * @param {string} activeFile - The path of the currently active file (e.g., "/App.js").
  * @param {number} [delay=2000] - The debounce delay in milliseconds (default: 2 seconds).
  */
-export const useAutoSave = (sandpackFiles, originalFiles, activeFile, delay = 2000) => {
+export const useAutoSave = (sandpackFiles, originalFiles, activeFile, delay = 2000, options = { enabled: true }) => {
   // Use a ref to store the latest file content without re-triggering the effect
   const sandpackFilesRef = useRef(sandpackFiles);
 
@@ -27,6 +27,7 @@ export const useAutoSave = (sandpackFiles, originalFiles, activeFile, delay = 20
   }, [sandpackFiles]);
 
   useEffect(() => {
+    if (!options.enabled) return;
     // Set up the timer
     const timerId = setTimeout(() => {
       // Find the corresponding file from the database
@@ -59,7 +60,8 @@ export const useAutoSave = (sandpackFiles, originalFiles, activeFile, delay = 20
     return () => {
       clearTimeout(timerId);
     };
-  }, [activeFile, delay, originalFiles]); // Re-run effect if the active file or delay changes
+  }, [activeFile, delay, originalFiles, options.enabled]); // Re-run effect if the active file or delay changes
+  
 };
 
 // Export as a default or named export based on your preference

@@ -4,6 +4,11 @@ import { updateFile } from '../controllers/fileController.js';
 const router = express.Router();
 
 router.put('/:id', updateFile);
-// Add POST for create, DELETE for delete 
+import { createFile, deleteFile } from '../controllers/fileController.js';
+import { renameFile } from '../controllers/fileController.js';
+
+router.post('/', createFile);
+router.delete('/:id', deleteFile);
+router.patch('/:id/rename', renameFile);
 
 export default router;

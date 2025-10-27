@@ -6,11 +6,12 @@ import mongoose from 'mongoose';
 
 import projectRoutes from './routes/projectRoutes.js';
 import fileRoutes from './routes/fileRoutes.js';
+import snapshotRoutes from './routes/snapshotRoutes.js';
 
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT;
 
 mongoose.connect(process.env.MONGODB_URI)
 .then(() => console.log('MongoDB Connected successfully.'))
@@ -27,6 +28,7 @@ app.get('/', (req, res) => {
 
 app.use('/api/projects', projectRoutes);
 app.use('/api/files', fileRoutes);
+app.use('/api/snapshots', snapshotRoutes);
 
 
 app.listen(PORT, () => {
