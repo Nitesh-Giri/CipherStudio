@@ -3,117 +3,165 @@ CipherStudio: A Web-Based React IDE
 CipherStudio is a full-stack MERN application that provides a lightweight, in-browser Integrated Development Environment (IDE) for simple React projects. It features a file explorer, a live-reloading code editor, and a browser preview, all powered by @codesandbox/sandpack-react.
 
 Projects are automatically created with a default App.js and package.json, and all file changes are automatically saved to a MongoDB database, allowing you to pick up where you left off.
+# CipherStudio
 
-✨ Features
+CipherStudio is a browser-based, full-stack React IDE built with a MERN-style architecture. It provides an in-browser code editor (via Sandpack), a file explorer, a live preview, and persistent storage for projects and files using MongoDB.
 
-Full-Stack MERN Architecture: Built with MongoDB, Express.js, React, and Node.js.
+This README explains how to run the project locally, how the repository is organized, and the important API endpoints.
 
-Live React Environment: Uses Sandpack to provide a live-reloading code editor and browser preview.
+Contents
 
-Persistent Storage: All projects and files are saved to a MongoDB database.
+- Features
+- Tech stack
+- Quick start (dev)
+- Environment variables
+- API endpoints
+- Project layout
+- Troubleshooting
+- Contributing
+- License
 
-Auto-Saving: A custom React hook automatically saves file changes to the backend after a 2-second delay.
+---
 
-Modern Frontend: Built with Vite, React (using Hooks), and styled with Tailwind CSS.
+## Features
 
-Scalable File Structure: The frontend is organized by feature and type (api, components, hooks, pages) for maintainability.
+- Live in-browser editor and preview using `@codesandbox/sandpack-react`.
+- File explorer with create / delete (and rename backend support).
+- Autosave (debounced) to backend via a custom `useAutoSave` hook.
+- Save / Load snapshots (local + server-side snapshots supported).
+- Theme toggle (dark / light) and autosave toggle persisted to `localStorage`.
 
-🚀 Tech Stack
+## Tech stack
 
-Backend (server)
+- Backend: Node.js, Express, Mongoose (MongoDB), dotenv, CORS
+- Frontend: React 18 (Vite), Tailwind CSS, Sandpack, axios, react-router
 
-Node.js: JavaScript runtime
+---
 
-Express.js: Web server framework
-
-MongoDB: NoSQL database
-
-Mongoose: ODM for MongoDB
-
-cors: Cross-Origin Resource Sharing middleware
-
-dotenv: For managing environment variables
-
-Frontend (client)
-
-React 18: UI library (with Hooks)
-
-Vite: Frontend build tool and dev server
-
-Tailwind CSS: Utility-first CSS framework
-
-@codesandbox/sandpack-react: The core editor/preview component
-
-react-router-dom: For client-side routing
-
-axios: For making API requests
-
-Getting Started
-
-To run this project locally, you will need two separate terminals: one for the backend server and one for the frontend client.
+## Quick start (development)
 
 Prerequisites
 
-Node.js (v16 or later)
+- Node.js 18+ (or at least v16)
+- MongoDB (local or hosted Atlas)
 
-MongoDB (a local instance or a free MongoDB Atlas cluster)
+Open two terminals (or terminal tabs): one for the backend and one for the frontend.
 
-1. Backend (server) Setup
+Backend
 
-Navigate to the server directory:
-
-cd server
-
-
-Install dependencies:
-
+```bash
+cd backend
 npm install
-
-
-Create your environment file:
-Create a file named .env in the server directory and add your MongoDB connection string and a port:
-
-# Example .env file
-MONGO_URI=mongodb+srv://<user>:<password>@cluster0.xxxxx.mongodb.net/myFirstDatabase?retryWrites=true&w=majority
-PORT=8008
-
-
-Note: The frontend is pre-configured to connect to port 8008. You can change this in client/src/api/index.js.
-
-Start the backend server:
-
-node server.js
-
-
-You should see MongoDB Connected successfully. and Server is running on port 8008.
-
-2. Frontend (client) Setup
-
-Open a new terminal and navigate to the client directory:
-
-cd client
-
-
-Install dependencies:
-
-npm install
-
-
-Start the frontend dev server:
-
+# create a .env file (see Environment variables below)
 npm run dev
+```
 
+Frontend
 
-Vite will open your browser to http://localhost:5173 (or the next available port).
+```bash
+cd frontend
+npm install
+npm run dev
+# Open http://localhost:5173
+```
 
-3. Usage
+Notes
 
-Open the application in your browser.
+- The backend dev script typically runs `nodemon index.js` and listens on the port defined in your `.env` (default 8008).
+- The frontend uses Vite and runs on port 5173 by default.
 
-Click the "Start a New Project" button.
+---
 
-You will be redirected to the IDE page for your new project.
+## Environment variables
 
-Start coding in App.js! Your changes will appear in the preview pane.
+Create a `.env` file in the `backend/` folder with at least the following:
 
-Wait two seconds after you stop typing, and your work will be automatically saved to the database.
+```
+PORT=8008
+MONGODB_URI=mongodb://localhost:27017/cipherstudio
+# or your Atlas connection string (mongodb+srv://...)
+```
+
+Do NOT commit secrets or `.env` files to the repository. Use `.env.example` (already included) as a template.
+
+---
+
+## API (important endpoints)
+
+Base URL: http://localhost:8008/api (adjust port if you changed it)
+
+- Projects
+	- POST /api/projects     -> create a new project
+	- GET  /api/projects/:id -> get project and files
+
+- Files
+	- POST   /api/files            -> create a new file (body: { projectId, name, type, content })
+	- PUT    /api/files/:id        -> update file content
+	- DELETE /api/files/:id        -> delete a file (simple cascade for folder children)
+	- PATCH  /api/files/:id/rename -> rename a file
+
+- Snapshots
+	- POST /api/snapshots               -> save snapshot (body: { projectId, data })
+	- GET  /api/snapshots/:projectId    -> list snapshots for a project
+	- POST /api/snapshots/:id/restore   -> restore a snapshot (writes files back to DB)
+
+---
+
+## Project layout
+
+Top-level folders:
+
+- `backend/` - Express server, controllers, models, and routes
+- `frontend/` - Vite React app, components, pages, hooks
+
+Key frontend files
+
+- `frontend/src/pages/IDEPage.jsx` - the main IDE page (Sandpack integration, FileExplorer)
+- `frontend/src/components/FileExplorer.jsx` - left-hand file navigator
+- `frontend/src/components/Navbar.jsx` - top navigation with theme and autosave controls
+- `frontend/src/hooks/useAutoSave.js` - debounced autosave logic
+
+Key backend files
+
+- `backend/index.js` - app entry point (connects to MongoDB, registers routes)
+- `backend/controllers/fileController.js` - create/update/delete/rename file logic
+- `backend/controllers/snapshotController.js` - snapshot save/list/restore
+- `backend/models/` - contains `Project.js`, `File.js`, and `Snapshot.js`
+
+---
+
+## Troubleshooting
+
+- "Cannot use import statement outside a module": ensure `backend/package.json` contains `"type": "module"` for ES modules.
+- MongoDB connection issues:
+	- If using Atlas with an SRV URI and you see DNS/ECONNREFUSED errors, ensure network access is allowed and the URI is correct.
+	- For quick local dev, use `mongodb://localhost:27017/cipherstudio` and run a local MongoDB instance.
+- If the frontend shows a blank editor area, ensure the project has at least one file. The IDE now supplies a minimal `/App.js` default when a project is empty.
+
+---
+
+## Contributing
+
+Contributions are welcome. Suggested workflow:
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feat/your-feature`
+3. Implement changes and add tests (where applicable)
+4. Open a PR with a clear description of the change
+
+Keep changes small and focused. If you plan a large feature, open an issue first describing the design.
+
+---
+
+## License
+
+This project does not include a license by default. Add a LICENSE file if you want to specify one (e.g. MIT).
+
+---
+
+If you'd like, I can also:
+
+- Add a short `frontend/README.md` and `backend/README.md` with focused instructions.
+- Add a `Makefile` or `scripts/dev.sh` to start frontend+backend with one command.
+
+If you want those, tell me which you'd prefer and I will add them next.
