@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'https://cipher-studio-pqb5d3unl-nitesh-giris-projects.vercel.app/api';
+const API_URL = 'https://cipher-studio-ng.vercel.app/api';
 
 const api = axios.create({
   baseURL: API_URL,
